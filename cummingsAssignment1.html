@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<!-- 
+Author: Katherine Cummings
+Several blocks of code have inspiration from examples on stack overflow and w3schools.
+Additionally, the paper.js documentation was used to learn how to visually represent the data.
+-->
+	<head>
+		<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+		<script>
+			var wData = 0;
+			var dData = 0;
+			var text = [];
+			
+			//Retrieves data from online stream and saves it for use.
+			function fetch() {
+			var text = $.getJSON( "https://data.sparkfun.com/output/dZ4EVmE8yGCRGx5XRX1W.json", function() {
+				wData = text.responseJSON[0]["windspeedmph"];
+				dData = text.responseJSON[0]["winddir"];
+				});
+			}
+			
+			//Sets time delay on data retrieval.
+			setInterval(fetch, 15000);
+
+			fetch();
+
+		</script>
+		<script type="text/javascript" src="dist/paper-full.js"></script>
+		<script type="text/paperscript" canvas="windGraph">
+			
+			//Paper.js instructions to build the first graph.
+			var height = 400;
+			view.viewSize = new Size(1000, 500);
+
+			var path = new Path();
+			path.strokeColor = 'black';
+			var start = new Point(60, 20);
+			path.moveTo(start);
+			path.lineTo(start + [ 0, height]);
+			
+			var path = new Path();
+			path.strokeColor = 'black';
+			var start = new Point(60, height+20);
+			path.moveTo(start);
+			path.lineTo(start + [ 980, 0]);
+			
+			var text = new PointText(new Point(450, height+50));
+			text.justification = 'center';
+			text.fillColor = 'black';
+			text.content = 'Time\n(Seconds)';
+			
+			var text = new PointText(new Point(25, height/2));
+			text.justification = 'center';
+			text.fillColor = 'black';
+			text.content = 'Wind\nSpeed\n(MPH)';
+			
+			var x = 60;
+			var counter = 0;
+			var temp = wData;
+			
+			var myPath = new Path();
+			myPath.strokeColor = 'black';
+			
+			//Checks for new data every 30 seconds and updates the graph.
+			function onFrame(event){
+				if((event.time-counter)>=30){
+					x = x + 60;
+					temp = wData;
+					myPath.add(new Point(x,(height - (temp*50))));
+					counter = counter + 30;
+				}
+			}
+		
+		</script>
+		<script type="text/paperscript" canvas="windDirection">
+		
+			//Paper.js instructions to build the second graph.
+			var height = 400;
+			view.viewSize = new Size(1000, 500);
+
+			var path = new Path();
+			path.strokeColor = 'black';
+			var start = new Point(60, 20);
+			path.moveTo(start);
+			path.lineTo(start + [ 0, height]);
+			
+			var path = new Path();
+			path.strokeColor = 'black';
+			var start = new Point(60, height+20);
+			path.moveTo(start);
+			path.lineTo(start + [ 980, 0]);
+			
+			var text = new PointText(new Point(450, height+50));
+			text.justification = 'center';
+			text.fillColor = 'black';
+			text.content = 'Time\n(Seconds)';
+			
+			var text = new PointText(new Point(25, height/2));
+			text.justification = 'center';
+			text.fillColor = 'black';
+			text.content = 'Direction\n (Degrees)';
+			
+			var x = 60;
+			var counter = 0;
+			var temp = dData;
+			
+			var myPath = new Path();
+			myPath.strokeColor = 'black';
+			
+			//Checks for new data every 30 seconds and updates the graph.
+			function onFrame(event){
+				if((event.time-counter)>=30){
+					x = x + 60;
+					temp = dData;
+					myPath.add(new Point(x,(height - (temp))));
+					counter = counter + 30;
+				}
+			}
+		
+		</script>
+		<script type="text/paperscript" canvas="windStar">
+			
+			//Paper.js instructions to build the wind pinwheel.
+			var rect = new Path.Rectangle(new Point(190, 190), new Point(210, 320));
+			rect.strokeColor = 'black';
+			rect.fillColor = 'grey';
+			var star = new Path.Star({
+				center: new Point(200, 200),
+				points: 5,
+				radius1: 40,
+				radius2: 100,
+			});
+			star.strokeColor = 'blue';
+			star.fillColor = 'pink';
+
+			view.viewSize = new Size(400, 400);
+			
+			var text = new PointText(new Point(200, 350));
+			text.justification = 'center';
+			text.fillColor = 'black';
+			text.content = 'Wind Speed\n(MPH)';
+			
+			var speed = new PointText(new Point(200, 380));
+			speed.justification = 'center';
+			speed.fillColor = 'black';
+			speed.content = '0';
+			
+			var x = 60;
+			var counter = 0;
+			var temp = wData;
+			
+			var myPath = new Path();
+			myPath.strokeColor = 'black';
+			
+			//Changes the speed and text and rotates accordingly.
+			function onFrame(event){
+				if((event.time-counter)>=30){
+					temp = wData;
+					speed.content = temp;
+					counter = counter + 30;
+				}
+				star.rotate(temp);
+			}
+		</script>
+	</head>
+	<body>
+		<canvas id="windGraph" resize></canvas>
+		<br />
+		<canvas id="windDirection" resize></canvas>
+		<br />
+		<canvas id="windStar" resize></canvas>
+	</body>
+</html>
